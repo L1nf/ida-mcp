@@ -7,12 +7,15 @@
   "keywords": [
     "pi-package",
     "omp-extension",
+    "dsh-plugin",
+    "deepseek-harness",
     "ida",
     "reverse-engineering",
     "mcp"
   ],
   "repository": "https://github.com/HexRaysSA/ida-mcp.git",
   "files": [
+    "cordis.patch.yml",
     "ida-mcp.ts",
     "ida-plugin.json",
     "ida_mcp_plugin.py",
@@ -29,6 +32,11 @@
     "extensions": [
       "./ida-mcp.ts"
     ]
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"

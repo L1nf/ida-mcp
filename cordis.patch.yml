@@ -1,0 +1,16 @@
+# DeepSeek Harness (DSH) MCP client configuration for IDA Pro
+- insert:
+    - id: mcp-ida
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: ida
+        transport: stdio
+        command: uv
+        args:
+          - run
+          - --no-dev
+          - --project
+          - !!js process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('ida-mcp/package.json'))
+          - ida-mcp
+          - stdio
+          - --agent=dsh

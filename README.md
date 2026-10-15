@@ -73,6 +73,42 @@ copilot plugin install ida-mcp@HexRaysSA
 copilot plugin update ida-mcp
 ```
 
+#### [DeepSeek Harness (DSH)](https://github.com/deepseek-ai)
+
+```bash
+# Install plugin via DSH Plugin Manager or CLI
+dsh plugin add git+https://github.com/L1nf/ida-mcp.git
+# Or install local development copy
+dsh plugin add ./path/to/ida-mcp
+```
+
+Alternatively, configure stdio in your DSH configuration or `.dsh-plugin/plugin.json`:
+
+```json
+{
+  "mcpServers": {
+    "ida": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-dev",
+        "--project",
+        "${DSH_PLUGIN_ROOT}",
+        "ida-mcp",
+        "stdio",
+        "--agent=dsh"
+      ]
+    }
+  }
+}
+```
+
+PreToolUse hook support is built-in:
+
+```bash
+uv run --no-dev --project ${DSH_PLUGIN_ROOT} ida-mcp hook dsh
+```
+
 #### [Pi](https://pi.dev/)
 
 ```bash

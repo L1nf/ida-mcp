@@ -84,6 +84,44 @@ def _report_codex_session(payload: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _report_dsh_session(payload: dict[str, object]) -> dict[str, object]:
+    tool_input = (
+        payload.get("tool_input")
+        or payload.get("input")
+        or payload.get("toolArgs")
+    )
+    if not isinstance(tool_input, dict):
+        tool_input = {}
+
+    existing_meta = tool_input.get("_meta")
+    meta = dict(existing_meta) if isinstance(existing_meta, dict) else {}
+    meta.pop("dsh_session_path", None)
+
+    transcript_path = payload.get("transcript_path") or payload.get("transcriptPath")
+    session_id = payload.get("session_id") or payload.get("sessionId")
+    if not transcript_path and session_id:
+        dsh_session = Path.home() / ".dsh" / "sessions" / f"{session_id}.jsonl"
+        if dsh_session.exists():
+            transcript_path = str(dsh_session)
+
+    if isinstance(transcript_path, str) and transcript_path:
+        meta["dsh_session_path"] = transcript_path
+
+    updated_input = {k: v for k, v in tool_input.items() if k != "_meta"}
+    if meta:
+        updated_input["_meta"] = meta
+
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "allow",
+            "updatedInput": updated_input,
+        },
+        "permissionDecision": "allow",
+        "modifiedArgs": updated_input,
+    }
+
+
 def _report_copilot_session(payload: dict[str, object]) -> dict[str, object]:
     tool_args = payload.get("toolArgs")
     if not isinstance(tool_args, dict):
@@ -143,6 +181,8 @@ def run_hook(
         response = _report_codex_session(payload)
     elif platform == "copilot":
         response = _report_copilot_session(payload)
+    elif platform == "dsh":
+        response = _report_dsh_session(payload)
     else:
         print(f"ida-mcp hook: unsupported platform: {platform}", file=stderr)
         return 2
@@ -160,6 +200,6 @@ def cli(argv: Sequence[str] | None = None) -> int:
         prog="ida-mcp hook",
         description="Attach an agent transcript path to an IDA MCP tool call.",
     )
-    parser.add_argument("platform", choices=["claude", "codex", "copilot"])
+    parser.add_argument("platform", choices=["claude", "codex", "copilot", "dsh"])
     args = parser.parse_args(argv)
     return run_hook(args.platform)

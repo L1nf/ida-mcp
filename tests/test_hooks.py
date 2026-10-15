@@ -40,6 +40,23 @@ def test_claude_hook_adds_transcript_metadata() -> None:
     }
 
 
+def test_dsh_hook_adds_transcript_metadata() -> None:
+    result, response, error = _run(
+        "dsh",
+        {
+            "tool_input": {"path": "sample.i64"},
+            "transcript_path": "/tmp/dsh.jsonl",
+        },
+    )
+
+    assert result == 0
+    assert error == ""
+    assert response["hookSpecificOutput"]["updatedInput"] == {
+        "path": "sample.i64",
+        "_meta": {"dsh_session_path": "/tmp/dsh.jsonl"},
+    }
+
+
 def test_codex_hook_allows_call_and_preserves_metadata() -> None:
     result, response, error = _run(
         "codex",
@@ -144,7 +161,7 @@ def test_copilot_hook_derives_session_file(monkeypatch, tmp_path: Path) -> None:
     }
 
 
-@pytest.mark.parametrize("platform", ["claude", "codex", "copilot"])
+@pytest.mark.parametrize("platform", ["claude", "codex", "copilot", "dsh"])
 @pytest.mark.parametrize("reported_path", ["session-42", "", None])
 @pytest.mark.parametrize("preserve_metadata", [True, False])
 def test_hook_replaces_incoming_session_path(
