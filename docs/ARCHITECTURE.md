@@ -30,7 +30,7 @@ The `ida-mcp` entry point requires one subcommand:
 | `http` | Serve Streamable HTTP in the foreground. |
 | `dashboard` | Render semantic traces and linked agent transcripts. |
 | `logs` | Build a validated support ZIP from traces, transcripts, and Nexus worker logs. |
-| `hook` | Rewrite one Claude, Codex, Copilot, or DSH pre-tool payload to attach transcript metadata. |
+| `hook` | Rewrite one Claude, Codex, Copilot, DSH, or ZCode pre-tool payload to attach transcript metadata. |
 
 The CLI imports command implementations lazily. Dashboard, log, and hook
 operations therefore do not initialize the MCP server or database manager.

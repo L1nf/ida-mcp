@@ -109,6 +109,23 @@ PreToolUse hook support is built-in:
 uv run --no-dev --project ${DSH_PLUGIN_ROOT} ida-mcp hook dsh
 ```
 
+#### ZCode
+
+```bash
+# Add this repository as a plugin marketplace
+zcode plugin marketplace add L1nf/ida-mcp
+# Install plugin
+zcode plugin install ida-mcp@ida-mcp
+# Update to latest version
+zcode plugin update ida-mcp@ida-mcp
+```
+
+PreToolUse hook support is built-in:
+
+```bash
+uv run --no-dev --project ${CLAUDE_PLUGIN_ROOT} ida-mcp hook zcode
+```
+
 #### [Pi](https://pi.dev/)
 
 ```bash

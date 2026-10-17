@@ -57,6 +57,39 @@ def test_dsh_hook_adds_transcript_metadata() -> None:
     }
 
 
+def test_zcode_hook_derives_rollout_transcript(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    rollout = tmp_path / ".zcode" / "cli" / "rollout" / "model-io-sess_abc-123.jsonl"
+    rollout.parent.mkdir(parents=True)
+    rollout.touch()
+    result, response, error = _run(
+        "zcode",
+        {
+            "tool_input": {
+                "path": "sample.i64",
+                "_meta": {"zcode_session_path": "/tmp/previous-session", "existing": True},
+            },
+            "transcript_path": "/tmp/zcode-hook-x/transcript.jsonl",
+            "session_id": "sess_abc-123",
+        },
+    )
+
+    assert result == 0
+    assert error == ""
+    assert response == {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "updatedInput": {
+                "path": "sample.i64",
+                "_meta": {
+                    "existing": True,
+                    "zcode_session_path": str(rollout),
+                },
+            },
+        }
+    }
+
+
 def test_codex_hook_allows_call_and_preserves_metadata() -> None:
     result, response, error = _run(
         "codex",

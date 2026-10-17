@@ -1,0 +1,11 @@
+{
+  "name": "ida-mcp",
+  "plugins": [
+    {
+      "name": "ida-mcp",
+      "source": ".",
+      "version": "20261008.0.1",
+      "description": "Official Hex-Rays IDA MCP Server."
+    }
+  ]
+}

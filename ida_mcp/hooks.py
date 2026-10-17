@@ -122,6 +122,39 @@ def _report_dsh_session(payload: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _report_zcode_session(payload: dict[str, object]) -> dict[str, object]:
+    tool_input = payload.get("tool_input") or payload.get("input")
+    if not isinstance(tool_input, dict):
+        tool_input = {}
+
+    existing_meta = tool_input.get("_meta")
+    meta = dict(existing_meta) if isinstance(existing_meta, dict) else {}
+    meta.pop("zcode_session_path", None)
+
+    # ZCode hook payloads only carry a throwaway transcript snapshot in a
+    # temporary directory, so the durable model-io rollout file is derived
+    # from the session id instead.
+    session_id = payload.get("session_id") or payload.get("sessionId")
+    if isinstance(session_id, str) and session_id:
+        rollout_id = re.sub(r"[^a-zA-Z0-9_-]+", "-", session_id).strip("-")[:80]
+        rollout_path = (
+            Path.home() / ".zcode" / "cli" / "rollout" / f"model-io-{rollout_id}.jsonl"
+        )
+        if rollout_path.exists():
+            meta["zcode_session_path"] = str(rollout_path)
+
+    updated_input = {k: v for k, v in tool_input.items() if k != "_meta"}
+    if meta:
+        updated_input["_meta"] = meta
+
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "updatedInput": updated_input,
+        }
+    }
+
+
 def _report_copilot_session(payload: dict[str, object]) -> dict[str, object]:
     tool_args = payload.get("toolArgs")
     if not isinstance(tool_args, dict):
@@ -183,6 +216,8 @@ def run_hook(
         response = _report_copilot_session(payload)
     elif platform == "dsh":
         response = _report_dsh_session(payload)
+    elif platform == "zcode":
+        response = _report_zcode_session(payload)
     else:
         print(f"ida-mcp hook: unsupported platform: {platform}", file=stderr)
         return 2
@@ -200,6 +235,6 @@ def cli(argv: Sequence[str] | None = None) -> int:
         prog="ida-mcp hook",
         description="Attach an agent transcript path to an IDA MCP tool call.",
     )
-    parser.add_argument("platform", choices=["claude", "codex", "copilot", "dsh"])
+    parser.add_argument("platform", choices=["claude", "codex", "copilot", "dsh", "zcode"])
     args = parser.parse_args(argv)
     return run_hook(args.platform)
